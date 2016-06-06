@@ -13,6 +13,7 @@ class CommentBox extends Component {
     };
 
     this.fetchCommentsFromServer = this.fetchCommentsFromServer.bind(this);
+    this.handleCommentSubmit = this.handleCommentSubmit.bind(this)
   }
 
   fetchCommentsFromServer() {
@@ -23,8 +24,24 @@ class CommentBox extends Component {
           throw err;
         }
         this.setState({data: res.body});
-        console.log(res.body);
       })
+  }
+
+  handleCommentSubmit(comment) {
+    var comments = this.state.data;
+    comment.id = Date.now();
+    var newComments = comments.concat([comment]);
+    this.setState({data: newComments});
+    request
+      .post(this.props.url)
+      .send(comment)
+      .end((err, res) => {
+        if(err) {
+          this.setState({data: comments});
+          throw err;
+        }
+        this.setState({data: res.body});
+      });
   }
 
   componentDidMount() {
@@ -37,7 +54,7 @@ class CommentBox extends Component {
       <div className='commentBox'>
         <h1>Comments</h1>
         <CommentList data={this.state.data} />
-        <CommentForm />
+        <CommentForm onCommentSubmit={this.handleCommentSubmit}/>
       </div>
     );
   }
